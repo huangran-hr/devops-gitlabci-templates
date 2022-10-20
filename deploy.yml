@@ -1,0 +1,26 @@
+#环境变量
+variables:
+  #发版dev测试环境
+  K8S_ENVIRONMENT: dev
+  #发版应用
+  APPLICATION: app-demo
+  #仓库用户
+  CONTAINER_REPO_USERNAME: ${HARBOR_REPO_USERNAME}
+  #仓库密码
+  CONTAINER_REPO_PASSWORD: ${HARBOR_REPO_PASSWORD}
+  #mvn_deploy,mvn_install,gradle编译工具
+  BUILD_TOOL: gradle
+
+#运行前设置获取变量
+before_script:
+  - export APP_TAG="${CI_COMMIT_TAG:-${CI_COMMIT_SHA::8}}"
+
+
+deploy_dev_k8s:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH  ==  "master"'
+  tags:
+    - jks
+  script:
+    - kubectl patch deployment ${APPLICATION} -n hotel --patch "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"myki\":\"$(date +'%s')\"}}}}}"
